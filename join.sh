@@ -53,3 +53,4 @@ chmod 440 $SUDO_FNAME
 set +x
 
 echo SUCCESS - you must restart in order to complete the join.
+
