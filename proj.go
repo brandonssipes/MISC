@@ -48,13 +48,15 @@ func setUser(){ //read saved file and set User variables
 
   scanner := bufio.NewScanner(fd);
   scanner.Scan()
-  fmt.Println(scanner.Text())
   user.name = scanner.Text()
+
   scanner.Scan()
   data := scanner.Text()
   user.location,_ = strconv.Atoi(data)//https://golang.org/pkg/strconv/
+
   scanner.Scan()
   notes := strings.Split(scanner.Text(), ",")
+
   for i:=0; i < 12; i++{
     user.notepad[i],_ = strconv.ParseBool(notes[i])
   }
@@ -711,18 +713,25 @@ func hash(wg * sync.WaitGroup){//TODO finish this
     fd, _ := os.Open("./.hash")
     defer fd.Close()
     //read in from the file
-    scanner := bufio.NewScanner(fd)
-    for scanner.Scan() { //
-      fmt.Println(scanner.Text())
-    }
+    scanner := bufio.NewScanner(fd);//create basic scanner
+    scanner.Scan();
+    hash_curr := scanner.Bytes();//read line
+    hash_curr = hash_curr[:len(hash_curr)-1]//remove the newline
+
+    scanner.Scan();
+    nonce := scanner.Text();
+    nonce,_ = strconv.Atoi(nonce);//turn back into number
+
+    fd.Close();
 
  }else{
-   token := make([]byte, 256)
+   token := make([]byte, 256)//create hash
    rand.Read(token)
 
    hasher.Write(token)
-   sha1_hash := hex.EncodeToString(hasher.Sum(nil))
-   fmt.Println(sha1_hash)
+   hash_curr := hex.EncodeToString(hasher.Sum(nil))
+
+   nonce := rand.Intn(99999999);//create reasonably random nonce since this is not actually dogecoin
  }
 
 
@@ -736,10 +745,16 @@ func hash(wg * sync.WaitGroup){//TODO finish this
     //4 if they are then call the dogecoin function
     //otherwise increment the nounce
   }
-  fmt.Println("TEST")
 
 
   //save the current hash and nounce
+  fd,_ := os.OpenFile("./.hash", os.O_WRONLY | os.O_TRUNC | os.O_CREATE, 0666);
+  writer := bufio.NewWriter(fd)
+  defer fd.Close();
+
+  fmt.Fprintf(writer, "%x\n", hash_curr);
+  fmt.Fprintf(writer, "%d",  nonce);
+  writer.Flush()//save hash and nonce
 
 }
 
