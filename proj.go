@@ -593,16 +593,37 @@ func save() {//TODO Test this
   fmt.Fprintf(writer, "%s\n", user.name)
   fmt.Fprintf(writer, "%d\n", user.location)
   for i:=0;i<11;i++{
-    fmt.Fprintf(writer, "%b,", user.notepad[i])
+    if(user.notepad[i] == true){ //printing a bool in the format that I wanted was troublesome
+      fmt.Fprintf(writer, "%s,", "true");
+    }else{
+      fmt.Fprintf(writer, "%s,", "false");
+    }
+    //fmt.Fprintf(writer, "%b,", user.notepad[i]) //gave a weird format
   }
-  fmt.Fprintf(writer, "%b\n", user.notepad[11])//last one add a newline instead of comma
+  if(user.notepad[11] == true){ //printing a bool in the format that I wanted was troublesome
+      fmt.Fprintf(writer, "%s\n", "true");
+    }else{
+      fmt.Fprintf(writer, "%s\n", "false");
+    }
   for i:=0;i<3;i++{
-    fmt.Fprintf(writer, "%b,", user.visited[i])
+    if(user.visited[i] == true){ //printing a bool in the format that I wanted was troublesome
+      fmt.Fprintf(writer, "%s,", "true");
+    }else{
+      fmt.Fprintf(writer, "%s,", "false");
+    }
+    //fmt.Fprintf(writer, "%b,", user.visited[i])
   }
-  fmt.Fprintf(writer, "%b\n", user.visited[3])//add newline instead of comma
+  if(user.visited[3] == true){ //printing a bool in the format that I wanted was troublesome
+      fmt.Fprintf(writer, "%s\n", "true");
+    }else{
+      fmt.Fprintf(writer, "%s\n", "false");
+    }
+  //fmt.Fprintf(writer, "%b\n", user.visited[3])//add newline instead of comma
+  writer.Flush()
 }
 
 func quit() {//TODO
+  fmt.Println("")
   os.Exit(0)
 
 }
