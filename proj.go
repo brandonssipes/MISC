@@ -701,7 +701,22 @@ func hash(wg * sync.WaitGroup){//TODO finish this
   //what was used to create the hash
   //otherwise increment a nounce
 
-  hasher := sha256.New()
+  hasher := sha256.New()//create a sha256 hasher
+
+  if _, err := os.Stat("./.hash"); os.IsNotExist(err){//https://stackoverflow.com/questions/12518876/how-to-check-if-a-file-exists-in-go
+    fd, _ := os.Open("./.hash")
+    //read in from the file
+    scanner := bufio.NewScanner(file)
+    for scanner.Scan() {
+      fmt.Println(scanner.Text())
+    }
+
+ }
+  defer fd.Close()
+
+
+
+
 
   token := make([]byte, 256)
   rand.Read(token)
@@ -712,10 +727,6 @@ func hash(wg * sync.WaitGroup){//TODO finish this
   fmt.Println(sha1_hash)
   sha_data,_ := hex.DecodeString(sha1_hash);
   fmt.Println(sha_data)
-
-  if _, err := os.Stat("./.hash"); os.IsNotExist(err){//https://stackoverflow.com/questions/12518876/how-to-check-if-a-file-exists-in-go
-    //load the file
-  }
 
 
 }
