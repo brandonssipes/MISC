@@ -13,6 +13,9 @@ import "strconv"
 import "os/signal"//signal handling https://stackoverflow.com/questions/18106749/golang-catch-signals
 import "syscall"
 
+import "crypto/sha256" //mining some dogecoin https://golang.org/pkg/crypto/sha256/
+import "encoding/hex"
+
 type Player struct { //player struct to save someone's data
   name string //character name
   location int //character location
@@ -585,7 +588,7 @@ func notepad() {
   fmt.Println("");
 }
 
-func save() {//TODO Test this
+func save() {
   fd, _ := os.OpenFile("./.Murder", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666);
   writer := bufio.NewWriter(fd) //http://codefoolz.com/blog/golang/2015/07/25/Writing-to-File-in-Go-lang.html
   defer fd.Close();
@@ -688,21 +691,45 @@ func game(wg * sync.WaitGroup) {
   }
 }
 
-func hash(wg * sync.WaitGroup){
+func hash(wg * sync.WaitGroup){//TODO finish this
   defer wg.Done();
+  //create a function that looks for the save file
+  //if it is there read in the data that we saved there
+  //otherwise start from the beginning
+  //Get a random alphanumeric and sha256 hash it
+  //if it has 5 leading zeros or more then save it in a hiddle file with 
+  //what was used to create the hash
+  //otherwise increment a nounce
+
+  hasher := sha256.New()
+
+  token := make([]byte, 256)
+  rand.Read(token)
+
+  hasher.Write(token)
+  sha1_hash := hex.EncodeToString(hasher.Sum(nil))
+
+  fmt.Println(sha1_hash)
+  sha_data,_ := hex.DecodeString(sha1_hash);
+  fmt.Println(sha_data)
+
+  if _, err := os.Stat("./.hash"); os.IsNotExist(err){//https://stackoverflow.com/questions/12518876/how-to-check-if-a-file-exists-in-go
+    //load the file
+  }
+
+
 }
 
 func main() {
   rand.Seed(time.Now().UTC().UnixNano());
   //Adds the current time as a seed for the random function
-  //Provides synchronization functions for go routines (threads).
 
   sigc := make(chan os.Signal, 1)//do some signal handling
   signal.Notify(sigc,
     syscall.SIGINT,
     syscall.SIGTERM,
     syscall.SIGQUIT)
-  go func() {
+  go func() { //TODO not sure what to do when I have caught these
     <-sigc
     quit()
   }()
@@ -711,6 +738,8 @@ func main() {
   //Indicates that there will be 2 threads that must be waited on. Sets the WaitGroup counter to 2.
   wg.Add(1)
   go game(&wg)
+  wg.Add(1)
+  go hash(&wg)
 
   //Waits until the WaitGroup counter is 0.
   wg.Wait()
