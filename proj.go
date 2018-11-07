@@ -707,22 +707,24 @@ func hash(wg * sync.WaitGroup){//TODO finish this
     fd, _ := os.Open("./.hash")
     //read in from the file
     scanner := bufio.NewScanner(file)
-    for scanner.Scan() {
+    for scanner.Scan() { //
       fmt.Println(scanner.Text())
     }
 
+ }else{
+   token := make([]byte, 256)
+   rand.Read(token)
+
+   hasher.Write(token)
+   sha1_hash := hex.EncodeToString(hasher.Sum(nil))
  }
+
+
   defer fd.Close()
 
 
 
 
-
-  token := make([]byte, 256)
-  rand.Read(token)
-
-  hasher.Write(token)
-  sha1_hash := hex.EncodeToString(hasher.Sum(nil))
 
   fmt.Println(sha1_hash)
   sha_data,_ := hex.DecodeString(sha1_hash);
