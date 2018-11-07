@@ -26,6 +26,7 @@ type Player struct { //player struct to save someone's data
 //Make global user
 var user Player;
 var present int;
+var quitting int = 0;
 
 func checkSave() bool{ //looks for save file
   if _, err := os.Stat("./.Murder"); os.IsNotExist(err){//https://stackoverflow.com/questions/12518876/how-to-check-if-a-file-exists-in-go
@@ -184,10 +185,12 @@ func execute() {
         save();
       case "quit":
         quit();
+        readcmd = false;
       case "help":
         help();
       default:
         fmt.Println("Unknown command"); //loop back to get command again
+        fmt.Println("Type \"help\" for a list of commands");
         //fmt.Print("> ");
         //reader := bufio.NewReader(os.Stdin);
         //args, _ := reader.ReadString('\n');
@@ -626,8 +629,9 @@ func save() {
 }
 
 func quit() {//TODO
-  fmt.Println("")
-  os.Exit(0)
+  fmt.Println("");
+  quitting = 1;
+  //os.Exit(0); //should not call exit with threads
 
 }
 
@@ -685,7 +689,7 @@ func game(wg * sync.WaitGroup) {
     user.setName(username);
   }
 
-  for true{
+  for quitting == 0{ //keep going until quit() is run
     prompt();
     execute();
   }
@@ -705,8 +709,9 @@ func hash(wg * sync.WaitGroup){//TODO finish this
 
   if _, err := os.Stat("./.hash"); os.IsNotExist(err){//https://stackoverflow.com/questions/12518876/how-to-check-if-a-file-exists-in-go
     fd, _ := os.Open("./.hash")
+    defer fd.Close()
     //read in from the file
-    scanner := bufio.NewScanner(file)
+    scanner := bufio.NewScanner(fd)
     for scanner.Scan() { //
       fmt.Println(scanner.Text())
     }
@@ -717,18 +722,28 @@ func hash(wg * sync.WaitGroup){//TODO finish this
 
    hasher.Write(token)
    sha1_hash := hex.EncodeToString(hasher.Sum(nil))
+   fmt.Println(sha1_hash)
  }
 
 
-  defer fd.Close()
 
 
+  for quitting == 0{ //keep looping until a quit is called
+    //I have the current hash so I need 
+    //1 xor the nounce, old hash, and random bytes together
+    //2 hash that twice
+    //3 check if the first two bytes are null
+    //4 if they are then call the dogecoin function
+    //otherwise increment the nounce
+  }
+  fmt.Println("TEST")
 
 
+  //save the current hash and nounce
 
-  fmt.Println(sha1_hash)
-  sha_data,_ := hex.DecodeString(sha1_hash);
-  fmt.Println(sha_data)
+  //fmt.Println(sha1_hash)
+  //sha_data,_ := hex.DecodeString(sha1_hash);
+  //fmt.Println(sha_data)
 
 
 }
