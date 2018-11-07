@@ -104,10 +104,14 @@ func game() {
   }
 }
 
+               
+
 func main() {
   go game()
   //Adds the current time as a seed for the random function
   //Provides synchronization functions for go routines (threads).
+  
+  go hash()
 
   var wg sync.WaitGroup //https://www.ardanlabs.com/blog/2014/01/concurrency-goroutines-and-gomaxprocs.html
   //Indicates that there will be 2 threads that must be waited on. Sets the WaitGroup counter to 2.
