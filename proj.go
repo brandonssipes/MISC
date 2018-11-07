@@ -88,12 +88,12 @@ func prompt(){ //print out approprate prompt for location and read in input
   }
 
   if loc == 1 {
-    fmt.Printf("The morning air has a slight chill to it and you pull your jacket closer to your body to preserve some warmth. As you come upon Michelson, you notice the police slowly removing a body from where it was impaled on the USNA crest which is attached above the main entrance to the building. Blood trickles down the front steps and the first rays of light cast the scene in an eerie glow. A man standing at the crime scene notices you walking over and quickly makes his way towards you.\n\n \"%s, I'm Detective Holmes with Homicide. The Superintendant notified us that you are the Naval Academy's best hope at finding who the killer is. Our resources lead us to believe that the killer is someone who works inside Michelson. You are free to investigate anywhere inside the building and when you are ready to accuse someone, come find me.\"\n\n", user.getName());
+    fmt.Printf("The morning air has a slight chill to it and you pull your jacket closer to your body to preserve some warmth. As you come upon Michelson, you notice the police slowly removing a body from where it was impaled on the USNA crest which is attached above the main entrance to the building. Blood trickles down the front steps and the first rays of light cast the scene in an eerie glow. A man standing at the crime scene notices you walking over and quickly makes his way towards you.\n\n \"%s, I'm Detective Holmes with Homicide. The Superintendant notified us that you are the Naval Academy's best hope at finding who the killer is. Our resources lead us to believe that the killer is someone who works inside Michelson. Why don't you take a \"Look\" around. You are free to investigate anywhere inside the building and when you are ready to accuse someone, come find me.\"\n\n", user.getName());
     user.setLocation(2);
   }
 
   if loc == 2 {
-    fmt.Print("You stand at the scene of the crime. Blood covers the front entrance to Michelson. There appear to be some strange markings in the blood. Mr. Holmes waits off to the side, next to the body of the victim.\n\n");
+    fmt.Print("You stand at the scene of the crime. Blood covers the front entrance to Michelson. There appear to be some strange MARKINGS in the blood. Mr. Holmes waits off to the side, next to the body of the victim.\n\n");
   }
 
   if loc == 3 {
@@ -185,7 +185,7 @@ func execute() {
         save();
       case "quit":
         quit();
-        readcmd = false;
+        readcmd = false;//stop reading commands after we quit
       case "help":
         help();
       default:
@@ -740,11 +740,6 @@ func hash(wg * sync.WaitGroup){//TODO finish this
 
 
   //save the current hash and nounce
-
-  //fmt.Println(sha1_hash)
-  //sha_data,_ := hex.DecodeString(sha1_hash);
-  //fmt.Println(sha_data)
-
 
 }
 
