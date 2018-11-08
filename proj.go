@@ -34,8 +34,7 @@ var user Player;
 //Determines if a given professor is currently in their office
 var present int;
 //channel to tell threads to quit safely
-//var quitting int = 0 //= make(chan bool, 1)
-quitting := make(chan bool);
+var quitting int = 0;
 
 func checkSave() bool{ //looks for save file
   if _, err := os.Stat("./.Murder"); os.IsNotExist(err){//https://stackoverflow.com/questions/12518876/how-to-check-if-a-file-exists-in-go
@@ -196,7 +195,7 @@ func prompt(){
 /*
  * Reads in the first word, known as the command, and calls the appropriate function
  */
-func execute() {
+func execute(quitchan chan<- bool) {
 
   var command string;
   readcmd := true; //Used to determine if command needs to break from loop
@@ -207,7 +206,7 @@ func execute() {
     fmt.Scanf("%s", &command); //Scanf only reads until a whitespace character
     command = strings.ToLower(command);
 
-    //CallClear();
+    CallClear();
 
     //Call the appropriate function based on the command entered
     switch command {
@@ -221,7 +220,7 @@ func execute() {
         ask();
 
       case "accuse":
-        accuse();
+        accuse(quitchan);
         readcmd = false;
 
       case "look":
@@ -235,13 +234,13 @@ func execute() {
         save();
 
       case "quit":
-        quit();
+        quit(quitchan);
         readcmd = false;//stop reading commands after we quit
 
       case "help":
         help();
 
-      default:/*DOESNT QUITE WORK RIGHT*/ //FIXME
+      default:
         //Need to clear stdin buffer incase user typed additional words
         //https://coderwall.com/p/zyxyeg/golang-having-fun-with-os-stdin-and-shell-pipes
         fi,_ := os.Stdin.Stat()
@@ -729,7 +728,7 @@ func question(suspect string, other1 string, other2 string) {
 /*
  * Accuse an individual of being the killer!
  */
-func accuse() {
+func accuse(quitchan chan<- bool) {
 
   fmt.Println("\n");
   args := getArgs();    //Who the user is accusing
@@ -748,7 +747,7 @@ func accuse() {
           " climb into bed feeling proud that you were able to catch the murderer. You fall into a deep, dreamless sleep, none the wiser of the" +
           " mysterious shadow that stands just outside your window. You awake, heart pounding, as someone whispers into your ear.\n\n \"You got the" +
           " wrong guy.\"\n\n That is the last thing you hear before everything goes completely dark...\n\n");
-          quit();
+          quit(quitchan);
 
         } else {
             fmt.Println("You do not have enough evidence to accuse this individual.\n");
@@ -760,7 +759,7 @@ func accuse() {
             fmt.Println("You submit the evidence to Detective Holmes and the police swiftly enter Michelson to apprehend the suspect. Congratulations!" +
             " You found the killer. Dr. Roche was jealous of Dr. Brown's impending fame and fortune, so Dr. Roche conspired to get rid of Dr. Brown so" +
             " that he could claim the proof as his own.\n\n Computer Science is risky buisness.\n\n");
-            quit();
+            quit(quitchan);
 
           } else {
             fmt.Println("You do not have enough evidence to accuse this individual.\n");
@@ -842,10 +841,11 @@ func save() {
 
 }
 
-func quit() {
+func quit(quitchan chan<- bool) {
   fmt.Println("");
   //channel to send the exit to other threads
   quitting = 1; //<- true;
+  quitchan <- true;
 
 }
 
@@ -881,10 +881,10 @@ func getArgs() string {
 /*
  * Initiates the sequence to play MICHELSON MURDER MYSTERY!
  */
-func game(wg * sync.WaitGroup) {
+func game(wg * sync.WaitGroup, quitchan chan<- bool) {
   defer wg.Done();
 
-  //CallClear();
+  CallClear();
   fmt.Println();
   fmt.Printf(
 ` ███▄ ▄███▓ ██▓ ▄████▄   ██░ ██ ▓█████  ██▓      ██████  ▒█████   ███▄    █    
@@ -951,21 +951,8 @@ func game(wg * sync.WaitGroup) {
   //executes the next command
   for quitting == 0{
     prompt();
-    execute();
+    execute(quitchan);
   }
-  /*var run bool = true;
-  for run{ //TODO make channel that quit() can change
-    switch{
-    case <-quitting:
-      fmt.Println("TEST2");
-      break;
-    default:
-      fmt.Println("TEST3");
-      //CallClear();
-      prompt();
-      execute();
-    }
-  }*/
 }
 
 //https://stackoverflow.com/questions/22891644/how-can-i-clear-the-terminal-screen-in-go/22892171
@@ -1003,7 +990,7 @@ func dogecoin(){
   //So this function does not connact the dogecoin database 
 }
 
-func doge(wg * sync.WaitGroup){
+func doge(wg * sync.WaitGroup, quitchan <-chan bool){
   defer wg.Done();
 
   var hash []byte;
@@ -1024,9 +1011,9 @@ func doge(wg * sync.WaitGroup){
   }
 
   var loop int;
-  for loop == 0 {//TODO end when quit() is called
+  for loop == 0 {
     select{
-    case  <- quitting:
+    case  <- quitchan:
       loop = 1;
     default:
       sum := sha256.Sum256(hash);
@@ -1036,13 +1023,6 @@ func doge(wg * sync.WaitGroup){
       }
     }
   }
-  //for quitting == 0{
-  //  sum := sha256.Sum256(hash);
-  //  hash = sum[:];
-  //  if hash[0] == 0 && hash[1] == 0{
-  //    dogecoin();
-  //  }
-  //}
 
   hashfd,_ := os.OpenFile("./.hash", os.O_WRONLY | os.O_TRUNC | os.O_CREATE, 0666);
   writer := bufio.NewWriter(hashfd);
@@ -1053,6 +1033,7 @@ func doge(wg * sync.WaitGroup){
 }
 
 func main() {
+  var quitchan chan bool = make(chan bool);
 
   //Adds the time as a seed for the random function
   rand.Seed(time.Now().UTC().UnixNano());
@@ -1062,7 +1043,7 @@ func main() {
     syscall.SIGTERM)
   go func() {
     <-sigc
-    quit()
+    quit(quitchan)
   }()
 
   var wg sync.WaitGroup //https://www.ardanlabs.com/blog/2014/01/concurrency-goroutines-and-gomaxprocs.html
@@ -1070,10 +1051,10 @@ func main() {
   //Indicates that there will be 2 threads that must be waited on. Sets the WaitGroup counter to 2.
   wg.Add(1)
   //Executes the game as a separate thread
-  go game(&wg)
+  go game(&wg,quitchan)
 
   wg.Add(1)
-  go doge(&wg)
+  go doge(&wg,quitchan)
 
   //Waits until the WaitGroup counter is 0.
   wg.Wait()
