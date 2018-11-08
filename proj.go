@@ -202,7 +202,12 @@ func execute(quitchan chan<- bool) {
   readcmd = true; //Used to determine if command needs to break from loop
 
   for readcmd {
-
+    fi,_ := os.Stdin.Stat()
+    if fi.Size() > 0 {
+      args := getArgs();
+      //https://stackoverflow.com/questions/21743841/how-to-avoid-annoying-error-declared-and-not-used
+      _ = args; //writes the string to an empty variable
+    }
     fmt.Printf("> ");
     fmt.Scanf("%s", &command); //Scanf only reads until a whitespace character
     command = strings.ToLower(command);
@@ -211,49 +216,42 @@ func execute(quitchan chan<- bool) {
 
     //Call the appropriate function based on the command entered
     switch command {
-      case "move":
-        readcmd = move();
+    case "move":
+      readcmd = move();
 
-      case "examine":
-        examine();
+    case "examine":
+      examine();
 
-      case "ask" :
-        ask();
+    case "ask" :
+      ask();
 
-      case "accuse":
-        accuse(quitchan);
-        readcmd = false;
+    case "accuse":
+      accuse(quitchan);
+      readcmd = false;
 
-      case "look":
-        fmt.Println("\n");
-        prompt();
+    case "look":
+      fmt.Println("\n");
+      prompt();
 
-      case "notepad":
-        notepad();
+    case "notepad":
+      notepad();
 
-      case "save":
-        save();
+    case "save":
+      save();
 
-      case "quit":
-        quit(quitchan);
-        readcmd = false;//stop reading commands after we quit
+    case "quit":
+      quit(quitchan);
 
-      case "help":
-        help();
+    case "help":
+      help();
 
-      default:
-        //Need to clear stdin buffer incase user typed additional words
-        //https://coderwall.com/p/zyxyeg/golang-having-fun-with-os-stdin-and-shell-pipes
-        fi,_ := os.Stdin.Stat()
-        if fi.Size() > 0 {
-          args := getArgs();
-          //https://stackoverflow.com/questions/21743841/how-to-avoid-annoying-error-declared-and-not-used
-          _ = args; //writes the string to an empty variable
-        }
-        if(readcmd){
-          fmt.Println("Unknown command");
-          fmt.Println("Type \"Help\" for a list of commands");
-        }
+    default:
+      //Need to clear stdin buffer incase user typed additional words
+      //https://coderwall.com/p/zyxyeg/golang-having-fun-with-os-stdin-and-shell-pipes
+      if(readcmd){
+        fmt.Println("Unknown command");
+        fmt.Println("Type \"Help\" for a list of commands");
+      }
     }
   }
 }
@@ -330,7 +328,7 @@ func move() bool {
       default:
         fmt.Printf("You cannot move to %s\n\n", args);
         //Causes the while loop in execute() to continue
-        return true;
+        return readcmd;
     }
 
     //Breaks out of the while loop in execute()  
@@ -846,7 +844,7 @@ func save() {
 func quit(quitchan chan<- bool) {
   fmt.Println("");
   //channel to send the exit to other threads
-  quitting = 1; 
+  quitting = 1;
   quitchan <- true;
   readcmd = false;
 }
@@ -871,7 +869,7 @@ func help() {
  */
 func getArgs() string {
   //https://stackoverflow.com/questions/14094190/golang-function-similar-to-getchar
-  //Reads up to aand including '\n'
+  //Reads up to and including '\n'
   reader := bufio.NewReader(os.Stdin);
   args, _ := reader.ReadString('\n');
   args = strings.ToLower(args); //everything is lowercase to simplify comparisons
