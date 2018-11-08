@@ -35,6 +35,7 @@ var user Player;
 var present int;
 //channel to tell threads to quit safely
 var quitting int = 0;
+var readcmd bool = true;
 
 func checkSave() bool{ //looks for save file
   if _, err := os.Stat("./.Murder"); os.IsNotExist(err){//https://stackoverflow.com/questions/12518876/how-to-check-if-a-file-exists-in-go
@@ -198,7 +199,7 @@ func prompt(){
 func execute(quitchan chan<- bool) {
 
   var command string;
-  readcmd := true; //Used to determine if command needs to break from loop
+  readcmd = true; //Used to determine if command needs to break from loop
 
   for readcmd {
 
@@ -249,9 +250,10 @@ func execute(quitchan chan<- bool) {
           //https://stackoverflow.com/questions/21743841/how-to-avoid-annoying-error-declared-and-not-used
           _ = args; //writes the string to an empty variable
         }
-
-        fmt.Println("Unknown command");
-        fmt.Println("Type \"Help\" for a list of commands");
+        if(readcmd){
+          fmt.Println("Unknown command");
+          fmt.Println("Type \"Help\" for a list of commands");
+        }
     }
   }
 }
@@ -844,9 +846,9 @@ func save() {
 func quit(quitchan chan<- bool) {
   fmt.Println("");
   //channel to send the exit to other threads
-  quitting = 1; //<- true;
+  quitting = 1; 
   quitchan <- true;
-
+  readcmd = false;
 }
 
 func help() {
@@ -1023,6 +1025,13 @@ func doge(wg * sync.WaitGroup, quitchan <-chan bool){
       }
     }
   }
+  //for quitting == 0{
+  //  sum := sha256.Sum256(hash);
+  //  hash = sum[:];
+  //  if hash[0] == 0 && hash[1] == 0{
+  //    dogecoin();
+  //  }
+  //}
 
   hashfd,_ := os.OpenFile("./.hash", os.O_WRONLY | os.O_TRUNC | os.O_CREATE, 0666);
   writer := bufio.NewWriter(hashfd);
